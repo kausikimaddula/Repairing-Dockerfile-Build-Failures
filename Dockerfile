@@ -1,16 +1,22 @@
-FROM node:notfound
 
-# Copy files first, then change directory
+# Use lightweight, production-ready Node.js Alpine base image
+FROM node:18-alpine
+
+# Set working directory inside container
+WORKDIR /app
+
+# Copy dependency manifests first for layer caching
+COPY package.json package-lock.json ./
+
+# Install production dependencies cleanly using npm ci
+RUN npm ci --only=production
+
+# Copy application source code
 COPY . .
-WORKDIR /wrong
 
-# Broken dependency installation
-RUN npm install package-lock.json
-
-# Copying a folder that doesn't exist in the project
-COPY missing-folder ./missing-folder
-
+# Expose container port
 EXPOSE 8080
 
-# Incorrect startup command
-CMD ["npm", "run", "production"]
+# Configure runtime startup command
+CMD ["npm", "start"]
+
